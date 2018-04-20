@@ -1,0 +1,116 @@
+group = 'com.vinarnt'
+version = '0.0.1-SNAPSHOT'
+
+buildscript {
+
+    ext.kotlin_version = "1.2.40"
+    ext.html_version = "0.6.6"
+    ext.ktor_version = "0.3.0"
+    ext.squash_version = "0.2.2"
+
+    repositories {
+
+        mavenLocal()
+        jcenter()
+        maven { url "http://dl.bintray.com/kotlin/kotlin-eap" }
+    }
+
+    dependencies {
+
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.30"
+    }
+}
+
+apply plugin: 'kotlin2js'
+//apply plugin: 'kotlin-dce-js'
+apply plugin: 'org.jetbrains.kotlin.frontend'
+
+repositories {
+
+    mavenLocal()
+    jcenter()
+    maven { url "http://dl.bintray.com/kotlin/kotlinx.html" }
+    maven { url "http://dl.bintray.com/kotlin/ktor" }
+    maven { url "https://dl.bintray.com/kotlin/squash" }
+    maven { url "https://kotlin.bintray.com/kotlin-js-wrappers" }
+}
+
+dependencies {
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-html-js:$html_version"
+
+    compile 'org.jetbrains:kotlin-react:16.3.1-pre.27-kotlin-1.2.30'
+    compile 'org.jetbrains:kotlin-react-dom:16.3.1-pre.27-kotlin-1.2.30'
+    compile 'org.jetbrains:kotlin-react-router-dom:4.2.2-pre.27-kotlin-1.2.30'
+    compile 'org.jetbrains:kotlin-styled:1.0.0-pre.27-kotlin-1.2.30'
+    compile 'org.jetbrains:kotlin-css:1.0.0-pre.27-kotlin-1.2.30'
+    compile 'org.jetbrains:kotlin-extensions:1.0.1-pre.27-kotlin-1.2.30'
+}
+
+kotlinFrontend {
+
+    downloadNodeJsVersion = "latest"
+    define "PRODUCTION", false
+
+    sourceMaps = true
+
+    npm {
+
+        dependency("react")
+        dependency("react-dom")
+        dependency("react-router-dom")
+        dependency("react-markdown")
+
+        devDependency("style-loader")
+        devDependency("css-loader")
+        devDependency("file-loader")
+//        devDependency("babel-loader")
+//        devDependency("babel-core")
+//        devDependency("karma")
+    }
+
+    webpackBundle {
+
+        bundleName = "main"
+        contentPath = file("src/main/web")
+        port = 8080
+    }
+}
+
+compileKotlin2Js {
+
+    kotlinOptions {
+
+        metaInfo = true
+        outputFile = "$project.buildDir.path/js/${project.name}.js"
+        sourceMap = true
+        sourceMapEmbedSources = "always"
+        moduleKind = 'commonjs'
+        main = "call"
+    }
+}
+
+//runDceKotlinJs.dceOptions.devMode = true
+//runDceTestKotlinJs.dceOptions.devMode = true
+
+sourceSets {
+
+    main {
+
+        kotlin.srcDirs += "src/main/kotlin"
+        resources.srcDirs += "src/main/resources"
+        resources.srcDirs += "src/main/kotlin"
+        output.resourcesDir = "build/js/resources"
+    }
+}
+
+kotlin {
+
+    experimental {
+
+        coroutines "enable"
+    }
+}
